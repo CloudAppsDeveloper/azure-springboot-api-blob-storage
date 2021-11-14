@@ -28,6 +28,9 @@ public class BlobStorageController {
   @Autowired
   ResourceLoader resourceLoader;
 
+    @Autowired
+    StorageUtil storageUtil;
+
     @GetMapping("/readBlobFile")
     public String readBlobFile(@RequestParam String fileName) throws IOException {
         System.out.println("filename:"+fileName);
@@ -42,17 +45,17 @@ public class BlobStorageController {
 
         return file.getURL().toString();
     }
-//    @PostMapping("/writeBlobFile")
-//    public String writeBlobFile(@RequestBody String data) throws IOException {
-//        try (OutputStream os = ((WritableResource) this.blobFile).getOutputStream()) {
-//            os.write(data.getBytes());
-//        }
-//        return "file was updated";
-//    }
-
+   /*@PostMapping("/writeBlobFile")
+   public String writeBlobFile(@RequestBody String data) throws IOException {
+       try (OutputStream os = ((WritableResource) this.blobFile).getOutputStream()) {
+           os.write(data.getBytes());
+       }
+       return "file was updated";
+   }
+*/
     @PostMapping(path="/uploadBlobFile",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String> uploadBlobFile(@RequestParam MultipartFile file) throws IOException {
-       File newFile =convertMultiPartToFile(file);
+       File newFile =storageUtil.convertMultiPartToFile(file);
         String fileName=file.getOriginalFilename();
 
         String filepath="azure-blob://students/"+fileName;
@@ -67,12 +70,35 @@ public class BlobStorageController {
         return ResponseEntity.ok().body(resource.getURL().toString());
     }
 
-    private File convertMultiPartToFile(MultipartFile file ) throws IOException
-    {
-        File convFile = new File( file.getOriginalFilename() );
-        FileOutputStream fos = new FileOutputStream( convFile );
-        fos.write( file.getBytes() );
-        fos.close();
-        return convFile;
+
+
+    @GetMapping("/creatBlobContainer")
+    public String createBlobContainer(@RequestParam String containerName){
+        String name=storageUtil.createBlobContainer(containerName);
+        System.out.println("container name:"+name);
+        return name;
+    }
+
+    @PostMapping(path="/uploadFile",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<String> uploadFile(@RequestParam MultipartFile file) throws IOException {
+        String responseUrl=storageUtil.uploadBlob(file);
+
+        System.out.println("file location url :"+responseUrl);
+        return ResponseEntity.ok().body(responseUrl);
+    }
+
+    @GetMapping("/downloadFile")
+    public ResponseEntity<String> downloadFile(@RequestParam String fileName) throws IOException {
+        String responseUrl=storageUtil.downloadFile(fileName);
+
+        //System.out.println("file location url :"+responseUrl);
+        return ResponseEntity.ok().body(responseUrl);
+    }
+
+    @GetMapping("/blobList")
+    public String blobList(@RequestParam String containerName){
+        storageUtil.getAllBlobs(containerName);
+        System.out.println("container name:"+containerName);
+        return "OK";
     }
 }
