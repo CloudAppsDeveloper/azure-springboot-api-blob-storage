@@ -55,7 +55,7 @@ public class BlobStorageController {
 */
     @PostMapping(path="/uploadBlobFile",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String> uploadBlobFile(@RequestParam MultipartFile file) throws IOException {
-       File newFile =storageUtil.convertMultiPartToFile(file);
+       //File newFile =storageUtil.convertMultiPartToFile(file);
         String fileName=file.getOriginalFilename();
 
         String filepath="azure-blob://students/"+fileName;
